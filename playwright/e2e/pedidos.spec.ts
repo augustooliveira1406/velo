@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-import { generateOrderNumber } from '../support/helpers';
+import { generateOrderNumber, searchOrder} from '../support/helpers';
 
 /// AAA - Arrange, Act, Assert
 test.describe('Consultar Pedido', () => {
@@ -30,9 +30,7 @@ test.describe('Consultar Pedido', () => {
     }
 
     // Act
-  //   await page.getByTestId('search-order-id').fill(orderNumber);
-    await page.getByRole('textbox', { name: 'Número do Pedido' }).fill(order.number);  
-    await page.getByRole('button', { name: 'Buscar Pedido' }).click();
+    await searchOrder(page, order.number)
   
     // Assert
     //await page.waitForTimeout(10000);   // nao utilizar, utilizar  TIMEOUT EXPLICITO
@@ -116,8 +114,7 @@ test.describe('Consultar Pedido', () => {
     }
     
     // Act
-    await page.getByRole('textbox', { name: 'Número do Pedido' }).fill(order.number);  
-    await page.getByRole('button', { name: 'Buscar Pedido' }).click();
+    await searchOrder(page, order.number)
   
     // Assert
     await expect(page.getByText('Pedido', { exact: true })).toBeVisible({ timeout: 10_000 });
@@ -182,8 +179,7 @@ test.describe('Consultar Pedido', () => {
     }
     
     // Act
-    await page.getByRole('textbox', { name: 'Número do Pedido' }).fill(order.number);  
-    await page.getByRole('button', { name: 'Buscar Pedido' }).click();
+    await searchOrder(page, order.number)
   
     // Assert
     await expect(page.getByText('Pedido', { exact: true })).toBeVisible({ timeout: 10_000 });
@@ -235,11 +231,10 @@ test.describe('Consultar Pedido', () => {
   test('deve exibir a mensagem de erro quando o pedido nao for encontrado', async ({ page }) => {
   
     //Test Data
-    const orderNumber = generateOrderNumber();
+    const order = generateOrderNumber();
 
     // Act
-    await page.getByRole('textbox', { name: 'Número do Pedido' }).fill(orderNumber);  
-    await page.getByRole('button', { name: 'Buscar Pedido' }).click();
+    await searchOrder(page, order)
   
     // Assert
     const titleMessage = page.getByRole('heading', { name: 'Pedido não encontrado' });
