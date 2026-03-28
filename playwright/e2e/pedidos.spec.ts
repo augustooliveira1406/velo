@@ -1,25 +1,28 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '@playwright/test'
 
-import { generateOrderNumber, searchOrder} from '../support/helpers';
+import { generateOrderCode } from '../support/helpers'
+
+import { OrderLockupPage } from '../support/pages/OrderLockupPage'
 
 /// AAA - Arrange, Act, Assert
-test.describe('Consultar Pedido', () => {
 
-  test.beforeEach(async ({page}) => {
+test.describe('Consulta de Pedido', () => {
+
+  test.beforeEach(async ({ page }) => {
     // Arrange
-    await page.goto('http://localhost:5173/');
-    await expect(page.getByTestId('hero-section').getByRole('heading')).toContainText('Velô Sprint');
-    
-    await page.getByRole('link', { name: 'Consultar Pedido' }).click();
-    await expect(page.getByRole('heading')).toContainText('Consultar Pedido');
-    })
-  
-  test('deve consultar o pedido aprovado', async ({ page }) => {
+    await page.goto('http://localhost:5173/')
+    await expect(page.getByTestId('hero-section').getByRole('heading')).toContainText('Velô Sprint')
 
-    //Test Data
+    await page.getByRole('link', { name: 'Consultar Pedido' }).click()
+    await expect(page.getByRole('heading')).toContainText('Consultar Pedido')
+  })
+
+  test('deve consultar um pedido aprovado', async ({ page }) => {
+
+    // Test Data
     const order = {
       number: 'VLO-F2MBJ9',
-      status: 'APROVADO',
+      status: 'APROVADO' as const,
       color: 'Lunar White',
       wheels: 'aero Wheels',
       customer: {
@@ -29,81 +32,22 @@ test.describe('Consultar Pedido', () => {
       payment: 'À Vista'
     }
 
-    // Act
-    await searchOrder(page, order.number)
-  
+    // Act  
+    const orderLockupPage = new OrderLockupPage(page)
+    await orderLockupPage.searchOrder(order.number)
+
     // Assert
-    //await page.waitForTimeout(10000);   // nao utilizar, utilizar  TIMEOUT EXPLICITO
-  
-    //await expect(page.getByTestId('order-result-id')).toBeVisible({timeout: 10_000});
-    //await expect(page.getByTestId('order-result-id')).toContainText(orderNumber);  
-    await expect(page.getByText('Pedido', { exact: true })).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByText(order.number)).toBeVisible();
-  
-    //await expect(page.getByTestId('order-result-status')).toBeVisible();
-    //await expect(page.getByTestId('order-result-status')).toContainText('APROVADO');  
-    await expect(page.getByText('APROVADO')).toBeVisible();
-  
-    //  outra abordagem via xpath
-  //   const orderCode = page.locator('//p[text()="Pedido"]/../p[text()=orderNumber]');
-  //   await expect(orderCode).toBeVisible({timeout: 10_000});
-  
-  //   const containerPedido = page.getByRole('paragraph')
-  //     .filter({hasText: 'Pedido'})
-  //     .filter({hastText: /ˆPedido$/ })    // Expressao regular utilizada para garantir assertividade
-  //     .locator('..');  //sobe para o elemeno pai (a DIV principal)
-  
-  //   await expect(containerPedido).toContainText(orderNumber);
-  
-  //   await expect(page.getByText('APROVADO')).toBeVisible();
-   
-  await expect(page.getByTestId(`order-result-${order.number}`)).toMatchAriaSnapshot(`
-    - img
-    - paragraph: Pedido
-    - paragraph: ${order.number}
-    - status:
-      - img
-      - text: ${order.status}
-    - img "Velô Sprint"
-    - paragraph: Modelo
-    - paragraph: Velô Sprint
-    - paragraph: Cor
-    - paragraph: ${order.color}
-    - paragraph: Interior
-    - paragraph: cream
-    - paragraph: Rodas
-    - paragraph: ${order.wheels}
-    - heading "Dados do Cliente" [level=4]
-    - paragraph: Nome
-    - paragraph: ${order.customer.name}
-    - paragraph: Email
-    - paragraph: ${order.customer.email}
-    - paragraph: Loja de Retirada
-    - paragraph
-    - paragraph: Data do Pedido
-    - paragraph: /\\d+\\/\\d+\\/\\d+/
-    - heading "Pagamento" [level=4]
-    - paragraph: ${order.payment}
-    - paragraph: /R\\$ \\d+\\.\\d+,\\d+/
-    `);
+    await orderLockupPage.validateOrderDetails(order)
+    await orderLockupPage.validateStatusBadge(order.status)
 
-    const statusBadge = page.getByRole('status').filter({hasText: order.status})
+  })
 
-    await expect(statusBadge).toHaveClass(/bg-green-100/)
-    await expect(statusBadge).toHaveClass(/text-green-700/)
+  test('deve consultar um pedido reprovado', async ({ page }) => {
 
-    const statusIcon = statusBadge.locator('svg')
-    await expect(statusIcon).toHaveClass(/lucide-circle-check-big/)
-
-  
-  });
-
-  test('deve consultar o pedido Reprovado', async ({ page }) => {
-
-    //Test Data
-      const order = {
+    // Test Data
+    const order = {
       number: 'VLO-8S5UVF',
-      status: 'REPROVADO',
+      status: 'REPROVADO' as const,
       color: 'Glacier Blue',
       wheels: 'sport Wheels',
       customer: {
@@ -112,63 +56,22 @@ test.describe('Consultar Pedido', () => {
       },
       payment: 'À Vista'
     }
-    
-    // Act
-    await searchOrder(page, order.number)
-  
+
+    // Act  
+    const orderLockupPage = new OrderLockupPage(page)
+    await orderLockupPage.searchOrder(order.number)
+
     // Assert
-    await expect(page.getByText('Pedido', { exact: true })).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByText(order.number)).toBeVisible();
-  
-    await expect(page.getByText('REPROVADO')).toBeVisible();
-  
-  
-  await expect(page.getByTestId(`order-result-${order.number}`)).toMatchAriaSnapshot(`
-    - img
-    - paragraph: Pedido
-    - paragraph: ${order.number}
-    - status:
-      - img
-      - text: ${order.status}
-    - img "Velô Sprint"
-    - paragraph: Modelo
-    - paragraph: Velô Sprint
-    - paragraph: Cor
-    - paragraph: ${order.color}
-    - paragraph: Interior
-    - paragraph: cream
-    - paragraph: Rodas
-    - paragraph: ${order.wheels}
-    - heading "Dados do Cliente" [level=4]
-    - paragraph: Nome
-    - paragraph: ${order.customer.name}
-    - paragraph: Email
-    - paragraph:  ${order.customer.email}
-    - paragraph: Loja de Retirada
-    - paragraph
-    - paragraph: Data do Pedido
-    - paragraph: /\\d+\\/\\d+\\/\\d+/
-    - heading "Pagamento" [level=4]
-    - paragraph:  ${order.payment}
-    - paragraph: /R\\$ \\d+\\.\\d+,\\d+/
-    `);
+    await orderLockupPage.validateOrderDetails(order)
+    await orderLockupPage.validateStatusBadge(order.status)
+  })
 
-    const statusBadge = page.getByRole('status').filter({hasText: order.status})
+  test('deve consultar um pedido em analise', async ({ page }) => {
 
-    await expect(statusBadge).toHaveClass(/bg-red-100/)
-    await expect(statusBadge).toHaveClass(/text-red-700/)
-
-    const statusIcon = statusBadge.locator('svg')
-    await expect(statusIcon).toHaveClass(/lucide-circle-x/)
-
-  });
-
-  test('deve consultar o pedido Em Analise', async ({ page }) => {
-
-    //Test Data
-      const order = {
+    // Test Data
+    const order = {
       number: 'VLO-22YDBE',
-      status: 'EM_ANALISE',
+      status: 'EM_ANALISE' as const,
       color: 'Glacier Blue',
       wheels: 'sport Wheels',
       customer: {
@@ -177,79 +80,30 @@ test.describe('Consultar Pedido', () => {
       },
       payment: 'À Vista'
     }
-    
-    // Act
-    await searchOrder(page, order.number)
-  
+
+    // Act  
+    const orderLockupPage = new OrderLockupPage(page)
+    await orderLockupPage.searchOrder(order.number)
+
     // Assert
-    await expect(page.getByText('Pedido', { exact: true })).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByText(order.number)).toBeVisible();
-  
-    await expect(page.getByText(order.status)).toBeVisible();
-  
-  
-  await expect(page.getByTestId(`order-result-${order.number}`)).toMatchAriaSnapshot(`
-    - img
-    - paragraph: Pedido
-    - paragraph: ${order.number}
-    - status:
-      - img
-      - text: ${order.status}
-    - img "Velô Sprint"
-    - paragraph: Modelo
-    - paragraph: Velô Sprint
-    - paragraph: Cor
-    - paragraph: ${order.color}
-    - paragraph: Interior
-    - paragraph: cream
-    - paragraph: Rodas
-    - paragraph: ${order.wheels}
-    - heading "Dados do Cliente" [level=4]
-    - paragraph: Nome
-    - paragraph: ${order.customer.name}
-    - paragraph: Email
-    - paragraph:  ${order.customer.email}
-    - paragraph: Loja de Retirada
-    - paragraph
-    - paragraph: Data do Pedido
-    - paragraph: /\\d+\\/\\d+\\/\\d+/
-    - heading "Pagamento" [level=4]
-    - paragraph:  ${order.payment}
-    - paragraph: /R\\$ \\d+\\.\\d+,\\d+/
-    `);
+    await orderLockupPage.validateOrderDetails(order)
+    await orderLockupPage.validateStatusBadge(order.status)
+  })
 
-    const statusBadge = page.getByRole('status').filter({hasText: order.status})
+  test('deve exibir mensagem quando o pedido não é encontrado', async ({ page }) => {
 
-    await expect(statusBadge).toHaveClass(/bg-amber-100/)
-    await expect(statusBadge).toHaveClass(/text-amber-700/)
+    const order = generateOrderCode()
 
-    const statusIcon = statusBadge.locator('svg')
-    await expect(statusIcon).toHaveClass(/lucide-clock/)
-  
-  });
+    const orderLockupPage = new OrderLockupPage(page)
+    await orderLockupPage.searchOrder(order)
 
-  test('deve exibir a mensagem de erro quando o pedido nao for encontrado', async ({ page }) => {
-  
-    //Test Data
-    const order = generateOrderNumber();
+    await orderLockupPage.validateOrderNotFound()
+  })
 
-    // Act
-    await searchOrder(page, order)
-  
-    // Assert
-    const titleMessage = page.getByRole('heading', { name: 'Pedido não encontrado' });
-    await expect(titleMessage).toBeVisible();
-  
-    const errorMessage = page.locator('p', { hasText: 'Verifique o número do pedido e tente novamente' });
-    await expect(errorMessage).toBeVisible();
-  
-    //Outra abordagem via Snapshot
-    await expect(page.locator('#root')).toMatchAriaSnapshot(`
-      - img
-      - heading "Pedido não encontrado" [level=3]
-      - paragraph: Verifique o número do pedido e tente novamente
-      `);
-  
-  });
+  test('deve exibir mensagem quando o código está fora do padrão', async ({ page }) => {
+    const orderLockupPage = new OrderLockupPage(page)
+    await orderLockupPage.searchOrder('PEDIDO-123')
 
-});
+    await orderLockupPage.validateOrderNotFound()
+  })
+})
