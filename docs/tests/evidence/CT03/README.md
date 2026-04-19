@@ -1,12 +1,14 @@
-# Evidências — CT03 (Checkout)
+# Evidências — CT03 (Opcionais + checkout)
 
-Execução automatizada: `npx playwright test playwright/e2e/checkout-ct03.spec.ts` com `baseURL` em `http://localhost:5173` e app em modo desenvolvimento.
+Conforme `docs/tests/test_cases.md` — **CT03 - Configuração do Veículo (Adição de Opcionais) e Cálculo de Preço**.
 
-| Arquivo | Caso coberto |
+Execução: `npx playwright test playwright/e2e/ct03-optionals-checkout.spec.ts` com app em `http://localhost:5173`.
+
+| Arquivo | Passo do caso |
 | --- | --- |
-| `ct03-passo-01-campos-obrigatorios.png` | Envio em branco bloqueado com mensagens de obrigatoriedade |
-| `ct03-passo-02-email-invalido.png` | Email `email_invalido` rejeitado com “Email inválido” |
-| `ct03-passo-03-telefone-incompleto.png` | Telefone vazio após limpar máscara — “Telefone inválido” |
-| `ct03-passo-04-termos-obrigatorios.png` | Envio sem aceite dos termos — “Aceite os termos” |
+| `ct03-passo-01-precision-park.png` | Opcional Precision Park (+R$ 5.500) |
+| `ct03-passo-02-flux-capacitor.png` | Precision Park + Flux Capacitor |
+| `ct03-passo-03-sem-opcionais.png` | Desmarcar opcionais — volta a R$ 40.000,00 |
+| `ct03-passo-04-checkout-resumo.png` | “Monte o Seu” → `/order` com resumo coerente |
 
-As interações reutilizam **Feature Actions** em `playwright/support/actions/checkoutActions.ts`.
+**Feature Actions:** `playwright/support/actions/configuratorActions.ts` e `checkoutActions.ts`.

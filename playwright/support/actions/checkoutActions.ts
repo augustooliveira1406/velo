@@ -83,6 +83,17 @@ export function createCheckoutActions(page: Page) {
       await input.press('Backspace')
     },
 
+    async clearCpfField() {
+      const input = page.getByTestId('checkout-cpf')
+      await input.click()
+      await input.press('ControlOrMeta+a')
+      await input.press('Backspace')
+    },
+
+    async expectSummaryTotalPrice(expected: string) {
+      await expect(page.getByTestId('summary-total-price')).toHaveText(expected)
+    },
+
     async confirmOrder() {
       await submitButton.click()
     },
