@@ -257,7 +257,7 @@ const Order = () => {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Form */}
           <div className="lg:col-span-2">
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <form noValidate onSubmit={handleSubmit} className="space-y-8">
               {/* Personal Info */}
               <section className="bg-card rounded-lg p-6 shadow-elegant">
                 <h2 className="font-display text-lg font-semibold mb-6">Dados Pessoais</h2>
