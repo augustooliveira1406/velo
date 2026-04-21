@@ -69,7 +69,7 @@ yarn add supabase -D
 
 # Login e vincular projeto
 yarn supabase login
-yarn supabase link --project-ref ngojeydqnaehgleulgjt
+yarn supabase link --project-ref ieperamioljedqeyscbx
 
 # Aplicar migrações (cria tabelas e RLS)
 yarn supabase db push
