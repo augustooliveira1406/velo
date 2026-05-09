@@ -122,13 +122,14 @@ test.describe('Checkout', () => {
 
   test.describe('Pagamento e Confirmação', () => {
 
-    test('deve criar um pedido com sucesso para pagamento à vista', async ({ page, app }) => {
+    test('deve criar um pedido à vista com sucesso para pagamento à vista', async ({ page, app }) => {
 
+      // Massa de dados coerente com o negócio
       const customer = {
         name: 'Augusto',
         lastname: 'Oliveira',
         email: 'augusto@teste.com',
-        document: '04400456811',
+        document: '04400456811', // CPF Válido
         phone: '(11) 98586-2297',
         store: 'Velô Paulista',
         paymentMethod: 'À Vista',
