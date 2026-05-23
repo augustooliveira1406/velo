@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import InputMask from 'react-input-mask';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import { z } from 'zod';
 import { cn } from '@/lib/utils';
+import { orderSchema, OrderFormData } from '@/lib/orderSchema';
+import { resolveCreditStatus } from '@/lib/creditDecision';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -58,18 +59,6 @@ const stores = [
   'Velô Ibirapuera - Av. Ibirapuera, 3000',
 ];
 
-const orderSchema = z.object({
-  name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
-  lastname: z.string().min(2, 'Sobrenome deve ter pelo menos 2 caracteres'),
-  email: z.string().email('Email inválido'),
-  phone: z.string().min(14, 'Telefone inválido'),
-  document: z.string().min(14, 'CPF inválido'),
-  store: z.string().min(1, 'Selecione uma loja'),
-  terms: z.boolean().refine((val) => val === true, 'Aceite os termos'),
-});
-
-type FormData = z.infer<typeof orderSchema>;
-
 const colorLabels: Record<ExteriorColor, string> = {
   'glacier-blue': 'Glacier Blue',
   'lunar-white': 'Lunar White',
@@ -82,9 +71,9 @@ const Order = () => {
   const { configuration, resetConfiguration } = useConfiguratorStore();
   const [paymentMethod, setPaymentMethod] = useState<'avista' | 'financiamento'>('avista');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof OrderFormData, string>>>({});
   const [entryValue, setEntryValue] = useState<number>(0);
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<OrderFormData>({
     name: '',
     lastname: '',
     email: '',
@@ -102,7 +91,7 @@ const Order = () => {
   const installmentValue = (amountToFinance / 12) * 1.02;
   const totalFinanced = installmentValue * 12;
 
-  const handleChange = (field: keyof FormData, value: string | boolean) => {
+  const handleChange = (field: keyof OrderFormData, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
@@ -115,9 +104,9 @@ const Order = () => {
     // Validate
     const result = orderSchema.safeParse(formData);
     if (!result.success) {
-      const fieldErrors: Partial<Record<keyof FormData, string>> = {};
+      const fieldErrors: Partial<Record<keyof OrderFormData, string>> = {};
       result.error.errors.forEach((err) => {
-        const field = err.path[0] as keyof FormData;
+        const field = err.path[0] as keyof OrderFormData;
         fieldErrors[field] = err.message;
       });
       setErrors(fieldErrors);
@@ -149,25 +138,7 @@ const Order = () => {
         }
 
         const score = data.score;
-        const entryPercentage = entryValue / totalPrice;
-
-        // Regras de Decisão (Ordem de Avaliação)
-        // 1️⃣ Regra da Entrada Alta: SE (Entrada >= 50% do Total) E (Score < 700) → APROVADO
-        if (entryPercentage >= 0.5 && score < 700) {
-          orderStatus = 'APROVADO';
-        }
-        // 2️⃣ Score Alto: SE Score > 700 → APROVADO
-        else if (score > 700) {
-          orderStatus = 'APROVADO';
-        }
-        // 3️⃣ Score Médio: SE Score entre 501 e 700 → EM_ANALISE
-        else if (score >= 501 && score <= 700) {
-          orderStatus = 'EM_ANALISE';
-        }
-        // 4️⃣ Score Baixo: SE Score <= 500 → REPROVADO
-        else {
-          orderStatus = 'REPROVADO';
-        }
+        orderStatus = resolveCreditStatus(score, entryValue / totalPrice);
 
       } catch (err) {
         console.error('Credit analysis network error:', err);
