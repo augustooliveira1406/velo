@@ -15,6 +15,7 @@ env:
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_SCOPE: augusto-oliveira-s-projects
+  TESTDINO: ${{ secrets.TESTDINO}}
 
 jobs:
   unit-tests:
@@ -140,6 +141,12 @@ jobs:
         with:
           name: playwright-report
           path: playwright-report
+      
+      # 8. Publicar report TestDino
+      - name: Publish TestDino Report
+        if: ${{ !cancelled() }}
+        run: npx tdpw upload ./playwright-report --token=$TESTDINO
+
 
   promote:
     name: Promote to Production
