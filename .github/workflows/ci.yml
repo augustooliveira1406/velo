@@ -10,7 +10,7 @@ on:
       - main
 
 env:
-  NODE_VERSION: '24'
+  NODE_VERSION: '22'
   VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -109,11 +109,18 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      # 5. Instalação do Chromiun
-      - name: Install Playwright Browser
-        run: yarn playwright install --with-deps chromium
+      # 5. Instalação do Chromium (sem --with-deps: apt-get trava no ubuntu-latest)
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
 
-      # 6. Exdcução dos Testes de Regressão
+      - name: Install Playwright Browser
+        timeout-minutes: 10
+        run: yarn exec playwright install chromium
+
+      # 6. Execução dos Testes de Regressão
       - name: Run E2E Regression Tests
         run: yarn playwright test playwright/e2e/online.spec.ts
         env:
