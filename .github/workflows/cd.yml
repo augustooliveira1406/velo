@@ -90,7 +90,12 @@ jobs:
           echo "Checking Preview variables..."
 
           grep "VITE_SUPABASE" .vercel/.env.preview.local || true
-
+    
+      - name: Show VITE Variables Names
+        run: |
+          echo "=== VITE VARIABLES ==="
+          cut -d '=' -f1 .vercel/.env.preview.local | sort      
+        
       # 6. Build para o Vercel
       - name: Build Vercel Preview
         run: yarn vercel build --token=$VERCEL_TOKEN
