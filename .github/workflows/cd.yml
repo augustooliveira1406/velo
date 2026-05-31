@@ -1,6 +1,3 @@
-# Workflow de Integração Contínua focado exclusivamente na execução
-# de testes unitários. Estrutura preparada para expansão futura
-# com novos jobs e etapas conforme evolução do projeto.
 
 name: Continuous Deployment
 
@@ -45,7 +42,7 @@ jobs:
       - name: Run unit tests
         run: yarn test
   
-  build-and-deploy:
+  build-and-deploy-preview:
     name: Build & Deploy Vercel Preview
     needs: [unit-tests]
     runs-on: ubuntu-latest
@@ -80,7 +77,7 @@ jobs:
           --scope=$VERCEL_SCOPE
       
       # 6. Build para o Vercel
-      - name: Build Vercel
+      - name: Build Vercel Preview
         run: yarn vercel build --token=$VERCEL_TOKEN
 
       # 7. Deploy Preview no Vercel
@@ -95,7 +92,7 @@ jobs:
       
   e2e-tests:
     name: Run E2E Tests
-    needs: [build-and-deploy]
+    needs: [build-and-deploy-preview]
     runs-on: ubuntu-latest
 
     steps:
@@ -132,7 +129,7 @@ jobs:
       - name: Run E2E Regression Tests
         run: yarn playwright test
         env:
-          BASE_URL: ${{ needs.build-and-deploy.outputs.deployment-url }}
+          BASE_URL: ${{ needs.build-and-deploy-preview.outputs.deployment-url }}
 
       # 7. Relatório de Testes Automatizados
       - name: Upload Playwright Report
@@ -147,17 +144,44 @@ jobs:
         if: ${{ !cancelled() }}
         run: npx tdpw upload ./playwright-report --token=${{ secrets.TESTDINO_TOKEN}}
 
+  deploy-production:
+      name: Build & Deploy Production
+      needs: [e2e-tests]
+      runs-on: ubuntu-latest
 
-  promote:
-    name: Promote to Production
-    needs: [build-and-deploy, e2e-tests]
-    runs-on: ubuntu-latest
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v6.0.2
 
-    steps:
-      - name: Vercel promote
-        run: |
-          npx vercel@latest promote ${{ needs.build-and-deploy.outputs.deployment-url }} \
-          --token=$VERCEL_TOKEN \
-          --scope=$VERCEL_SCOPE \
-          --yes
+        - name: Setup Node.js
+          uses: actions/setup-node@v6.4.0
+          with:
+            node-version: ${{ env.NODE_VERSION }}
+
+        - name: Enable Corepack
+          run: corepack enable
+
+        - name: Install dependencies
+          run: yarn install
+
+        - name: Pull Production Environment Variables
+          run: |
+            yarn vercel pull --yes \
+              --environment=production \
+              --token=$VERCEL_TOKEN \
+              --scope=$VERCEL_SCOPE
+
+        - name: Build Production
+          run: |
+            yarn vercel build \
+              --prod \
+              --token=$VERCEL_TOKEN
+
+        - name: Deploy Production
+          run: |
+            yarn vercel deploy \
+              --prebuilt \
+              --prod \
+              --token=$VERCEL_TOKEN \
+              --scope=$VERCEL_SCOPE
 
