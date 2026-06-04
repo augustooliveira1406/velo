@@ -71,58 +71,22 @@ jobs:
       # 5. Obter as conficurações do Vercel
       - name: Pull Vercel Config
         run: |
-          yarn vercel pull --yes \
+          yarn vercel env pull .env.preview.local \
           --environment=preview \
           --token=$VERCEL_TOKEN \
           --scope=$VERCEL_SCOPE
 
-      # 5.1 Debug
-      - name: Debug Vercel Environment Files
+      - name: Verify Preview Variables
         run: |
-          echo "=== .vercel directory ==="
-          ls -la .vercel || true
+          grep "VITE_SUPABASE" .env.preview.local
 
-          echo ""
-          echo "=== Environment files ==="
-          find .vercel -type f | sort
-
-      - name: Vercel Who Am I
+      - name: Build Preview
         run: |
-          npx vercel whoami \
+          yarn vercel build \
+            --target=preview \
             --token=$VERCEL_TOKEN
-        
-      - name: List Vercel Env Variables
-        run: |
-          npx vercel env ls preview \
-            --token=$VERCEL_TOKEN \
-            --scope=$VERCEL_SCOPE
-
-      - name: Check raw env file
-        run: |
-          echo "=== ENV FILE ==="
-          sed -n '/VITE_SUPABASE/p' .vercel/.env.preview.local
-
-      - name: Show Preview Environment
-        run: |
-          cat .vercel/project.json
-
-      - name: Validate Preview Variables
-        run: |
-          echo "URL length:"
-          echo -n "$VITE_SUPABASE_URL" | wc -c
-        
-          echo "PROJECT_ID length:"
-          echo -n "$VITE_SUPABASE_PROJECT_ID" | wc -c
-        
-          echo "KEY length:"
-          echo -n "$VITE_SUPABASE_PUBLISHABLE_KEY" | wc -c
-    
-      - name: Show VITE Variables Names
-        run: |
-          echo "=== VITE VARIABLES ==="
-          cut -d '=' -f1 .vercel/.env.preview.local | sort      
-        
-      # 6. Build para o Vercel
+      
+            # 6. Build para o Vercel
       - name: Build Vercel Preview
         run: yarn vercel build --token=$VERCEL_TOKEN
 
