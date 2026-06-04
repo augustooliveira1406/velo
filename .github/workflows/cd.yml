@@ -85,10 +85,17 @@ jobs:
           echo ""
           echo "=== Environment files ==="
           find .vercel -type f | sort
-      
-      - name: Check Test Variable
+
+      - name: Vercel Who Am I
         run: |
-          grep "TESTE_PIPELINE" .vercel/.env.preview.local || true
+          npx vercel whoami \
+            --token=$VERCEL_TOKEN
+        
+      - name: List Vercel Env Variables
+        run: |
+          npx vercel env ls preview \
+            --token=$VERCEL_TOKEN \
+            --scope=$VERCEL_SCOPE
 
       - name: Check raw env file
         run: |
