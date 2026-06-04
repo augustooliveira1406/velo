@@ -75,6 +75,7 @@ jobs:
           --environment=preview \
           --token=$VERCEL_TOKEN \
           --scope=$VERCEL_SCOPE
+
       # 5.1 Debug
       - name: Debug Vercel Environment Files
         run: |
@@ -85,11 +86,20 @@ jobs:
           echo "=== Environment files ==="
           find .vercel -type f | sort
 
-      - name: Validate Preview Environment Variables
+      - name: Show Preview Environment
         run: |
-          echo "Checking Preview variables..."
+          cat .vercel/project.json
 
-          grep "VITE_SUPABASE" .vercel/.env.preview.local || true
+      - name: Validate Preview Variables
+        run: |
+          echo "URL length:"
+          echo -n "$VITE_SUPABASE_URL" | wc -c
+        
+          echo "PROJECT_ID length:"
+          echo -n "$VITE_SUPABASE_PROJECT_ID" | wc -c
+        
+          echo "KEY length:"
+          echo -n "$VITE_SUPABASE_PUBLISHABLE_KEY" | wc -c
     
       - name: Show VITE Variables Names
         run: |
