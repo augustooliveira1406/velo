@@ -1,3 +1,4 @@
+import { ensureDatabaseUrl } from './ensureDatabaseUrl'
 import { db } from './database'
 import { OrderTable } from './schema'
 
@@ -16,6 +17,7 @@ export function normalizeValue(value: string) {
 }
 
 export async function insertOrder(order: OrderDetails) {
+  ensureDatabaseUrl()
 
   const data: OrderTable = {
     id: crypto.randomUUID(),
@@ -38,6 +40,7 @@ export async function insertOrder(order: OrderDetails) {
 }
 
 export async function deleteOrderByNumber(orderNumber: string) {
+  ensureDatabaseUrl()
   await db.deleteFrom('orders').where('order_number', '=', orderNumber).execute()
 }
 
