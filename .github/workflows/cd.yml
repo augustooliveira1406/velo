@@ -89,6 +89,11 @@ jobs:
           echo "KEY length:"
           grep VITE_SUPABASE_PUBLISHABLE_KEY .vercel/.env.preview.local | wc -c
       
+          - name: Show Preview Variables
+        run: |
+          echo "=== ENV FILE ==="
+          grep "VITE_SUPABASE" .vercel/.env.preview.local    
+          
       # 6. Build para o Vercel
       - name: Build Vercel Preview
         run: yarn vercel build --token=$VERCEL_TOKEN
