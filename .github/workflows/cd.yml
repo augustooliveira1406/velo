@@ -83,8 +83,8 @@ jobs:
       - name: Build Preview
         run: |
           yarn vercel build \
-            --target=preview \
-            --token=$VERCEL_TOKEN
+          --target=preview \
+          --token=$VERCEL_TOKEN
       
       # 6. Build para o Vercel
       - name: Build Vercel Preview
