@@ -78,14 +78,16 @@ jobs:
 
       - name: Verify Preview Variables
         run: |
+          echo "=== Preview Variables ==="
+      
           echo "URL length:"
-          grep VITE_SUPABASE_URL .env.preview.local | wc -c
+          grep VITE_SUPABASE_URL .vercel/.env.preview.local | wc -c
       
           echo "PROJECT length:"
-          grep VITE_SUPABASE_PROJECT_ID .env.preview.local | wc -c
+          grep VITE_SUPABASE_PROJECT_ID .vercel/.env.preview.local | wc -c
       
           echo "KEY length:"
-          grep VITE_SUPABASE_PUBLISHABLE_KEY .env.preview.local | wc -c
+          grep VITE_SUPABASE_PUBLISHABLE_KEY .vercel/.env.preview.local | wc -c
       
       # 6. Build para o Vercel
       - name: Build Vercel Preview
