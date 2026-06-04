@@ -118,8 +118,9 @@ jobs:
         timeout-minutes: 20
         env:
           BASE_URL: ${{ needs.build-and-deploy-preview.outputs.deployment-url }}
-          # Pooler Supabase (Session :5432 em *.pooler.supabase.com) — evita queda de conexão no meio dos testes
-          DATABASE_URL: ${{ secrets.PREVIEW_DATABASE_URL }}
+          # HTTPS — funciona no GitHub Actions (Postgres direto/pooler costuma dar timeout no runner)
+          SUPABASE_URL: ${{ secrets.PREVIEW_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PREVIEW_SUPABASE_SERVICE_ROLE_KEY }}
           CI: true
         run: |
           yarn playwright test

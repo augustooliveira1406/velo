@@ -1,10 +1,11 @@
 import 'dotenv/config'
 import pg from 'pg'
+import { pingSupabaseAdmin, getSupabaseAdminConfig } from './support/database/supabaseAdmin'
 import { resolveDatabaseUrl } from './support/database/database'
 
 const CONNECT_TIMEOUT_MS = 15_000
 
-export default async function globalSetup() {
+async function pingPostgres(): Promise<void> {
   const connectionString = resolveDatabaseUrl()
   if (!connectionString) return
 
@@ -19,12 +20,21 @@ export default async function globalSetup() {
     await client.query('SELECT 1')
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
-    throw new Error(
-      `Não foi possível conectar ao Postgres em ${CONNECT_TIMEOUT_MS}ms (${message}). ` +
-        'Use PREVIEW_DATABASE_URL do pooler Supabase. Preferível: Session pooler (porta 5432 em *.pooler.supabase.com). ' +
-        'Se usar Transaction pooler (6543), a URI deve ser a do painel com host pooler.',
-    )
+    throw new Error(`Postgres (${CONNECT_TIMEOUT_MS}ms): ${message}`)
   } finally {
     await client.end()
+  }
+}
+
+export default async function globalSetup() {
+  if (getSupabaseAdminConfig()) {
+    await pingSupabaseAdmin()
+    return
+  }
+
+  const connectionString = resolveDatabaseUrl()
+  if (connectionString) {
+    await pingPostgres()
+    return
   }
 }
