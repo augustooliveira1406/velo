@@ -86,6 +86,11 @@ jobs:
           echo "=== Environment files ==="
           find .vercel -type f | sort
 
+      - name: Check raw env file
+        run: |
+          echo "=== ENV FILE ==="
+          sed -n '/VITE_SUPABASE/p' .vercel/.env.preview.local
+
       - name: Show Preview Environment
         run: |
           cat .vercel/project.json
