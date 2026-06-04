@@ -114,11 +114,24 @@ jobs:
         timeout-minutes: 10
         run: yarn exec playwright install chromium
 
+      - name: Validate Supabase E2E secrets
+        env:
+          SUPABASE_URL: ${{ secrets.PREVIEW_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PREVIEW_SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "::error::Defina PREVIEW_SUPABASE_URL e PREVIEW_SUPABASE_SERVICE_ROLE_KEY nos secrets do repositório."
+            exit 1
+          fi
+          if echo "$SUPABASE_SERVICE_ROLE_KEY" | grep -q '^sb_publishable_'; then
+            echo "::error::PREVIEW_SUPABASE_SERVICE_ROLE_KEY está com a chave publishable. Use service_role (API → service_role → Reveal)."
+            exit 1
+          fi
+
       - name: Run E2E Regression Tests
         timeout-minutes: 20
         env:
           BASE_URL: ${{ needs.build-and-deploy-preview.outputs.deployment-url }}
-          # HTTPS — funciona no GitHub Actions (Postgres direto/pooler costuma dar timeout no runner)
           SUPABASE_URL: ${{ secrets.PREVIEW_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PREVIEW_SUPABASE_SERVICE_ROLE_KEY }}
           CI: true

@@ -1,4 +1,4 @@
-import 'dotenv/config'
+import '../loadEnv'
 import pg from 'pg'
 import { Kysely, PostgresDialect } from 'kysely'
 import { Database } from './schema'

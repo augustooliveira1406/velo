@@ -1,7 +1,9 @@
-import 'dotenv/config'
 import pg from 'pg'
+import { loadTestEnv } from './support/loadEnv'
 import { pingSupabaseAdmin, getSupabaseAdminConfig } from './support/database/supabaseAdmin'
 import { resolveDatabaseUrl } from './support/database/database'
+
+loadTestEnv()
 
 const CONNECT_TIMEOUT_MS = 15_000
 
