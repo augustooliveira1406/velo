@@ -115,10 +115,12 @@ jobs:
         run: yarn exec playwright install chromium
 
       - name: Run E2E Regression Tests
+        timeout-minutes: 20
         env:
           BASE_URL: ${{ needs.build-and-deploy-preview.outputs.deployment-url }}
-          # Mesmo Postgres do preview (PREVIEW_SUPABASE_* no build); sem isso insertOrder não alimenta o app na Vercel
+          # Pooler Supabase (porta 6543) — conexão direta :5432 costuma travar no GitHub Actions
           DATABASE_URL: ${{ secrets.PREVIEW_DATABASE_URL }}
+          CI: true
         run: |
           yarn playwright test
 
