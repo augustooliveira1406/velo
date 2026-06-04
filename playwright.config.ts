@@ -16,6 +16,7 @@ dotenv.config({ path: path.resolve(__dirname, '.env') });
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
+  globalSetup: './playwright/global-setup.ts',
 
   // Tempo máximo para cada teste completo (3o segundo é o padrão)
   timeout: 60_000,

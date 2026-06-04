@@ -118,7 +118,7 @@ jobs:
         timeout-minutes: 20
         env:
           BASE_URL: ${{ needs.build-and-deploy-preview.outputs.deployment-url }}
-          # Pooler Supabase (porta 6543) — conexão direta :5432 costuma travar no GitHub Actions
+          # Pooler Supabase (Session :5432 em *.pooler.supabase.com) — evita queda de conexão no meio dos testes
           DATABASE_URL: ${{ secrets.PREVIEW_DATABASE_URL }}
           CI: true
         run: |

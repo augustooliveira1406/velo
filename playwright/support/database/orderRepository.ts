@@ -1,5 +1,5 @@
 import { ensureDatabaseUrl } from './ensureDatabaseUrl'
-import { db } from './database'
+import { withDatabase } from './database'
 import { OrderTable } from './schema'
 
 import { OrderDetails } from '../actions/orderLookupActions'
@@ -35,15 +35,20 @@ export async function insertOrder(order: OrderDetails) {
     updated_at: new Date().toISOString(),
     optionals: [],
   }
-  // If the record exists it might throw a duplicate error, but we manage teardown.
-  await db.insertInto('orders').values(data).execute()
+
+  await withDatabase((db) => db.insertInto('orders').values(data).execute())
 }
 
 export async function deleteOrderByNumber(orderNumber: string) {
   ensureDatabaseUrl()
-  await db.deleteFrom('orders').where('order_number', '=', orderNumber).execute()
+  await withDatabase((db) =>
+    db.deleteFrom('orders').where('order_number', '=', orderNumber).execute(),
+  )
 }
 
 export async function deleteOrderByEmail(email: string) {
-  await db.deleteFrom('orders').where('customer_email', '=', email).execute()
+  ensureDatabaseUrl()
+  await withDatabase((db) =>
+    db.deleteFrom('orders').where('customer_email', '=', email).execute(),
+  )
 }
