@@ -80,6 +80,10 @@ jobs:
         run: |
           grep "VITE_SUPABASE" .env.preview.local
 
+      - name: Check New Variable
+        run: |
+          grep "TESTE_NOVO" .env.preview.local || true
+
       - name: Build Preview
         run: |
           yarn vercel build \
